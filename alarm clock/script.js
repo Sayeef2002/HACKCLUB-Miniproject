@@ -1,42 +1,55 @@
-let alarmTime
-const audio = document.getElementById('alarmAudio')
-let alarmTimeout 
-
-function updateTime(){
-    let date = new Date();
-    let day = styleValue(date.getDate());
-    let month = styleValue(date.getMonth());
-    let year = styleValue(date.getFullYear())
-    let hour = styleValue(date.getHours());
-    let min = styleValue(date.getMinutes());
-    let sec = styleValue(date.getSeconds());
-    document.getElementById('clock').innerHTML=`${day}-${month}-${year} <br> ${hour} : ${min} : ${sec}`
+var sound = new Audio();
+sound.src = 'audio/Alarm.mp3';
+var timer;
+ 
+function setAlarm(el){
+	var time = document.getElementById('alarmTime').valueAsNumber;
+	if(isNaN(time)){
+		alert("Invalid DateTime");
+		return;
+	}
+ 
+	var alarm = new Date(time);
+	var alarmTime = new Date(alarm.getUTCFullYear(), alarm.getUTCMonth(), alarm.getUTCDate(), alarm.getUTCHours(), alarm.getUTCMinutes(), alarm.getUTCSeconds());
+	var duration = alarmTime.getTime() - (new Date()).getTime();
+ 
+	if(duration < 0){
+		alert('Time is already passed');
+		return;
+	}
+ 
+	timer = setTimeout(initAlarm, duration);
+	el.innerHTML = "<span class='glyphicon glyphicon-remove'></span> Cancel Alarm";
+	el.setAttribute('onclick', 'cancelAlarm(this);');
+	el.setAttribute('class', 'btn btn-danger');
 }
-function styleValue(value){
-    if(value >= 10) return value
-    return '0' + value
+ 
+ 
+function cancelAlarm(el){
+	el.innerHTML = "<span class='glyphicon glyphicon-time'></span> Set Alarm";
+	el.setAttribute('onclick', 'setAlarm(this);');
+	el.setAttribute('class', 'btn btn-success');
+	clearTimeout(timer);
 }
-function setTime(value){
-    alarmTime = value
+ 
+function initAlarm(){
+	sound.loop = true;
+	sound.play();
+	document.getElementById('alarmButton').style.display = 'none';
+	document.getElementById('selectButton').style.display = '';
 }
-function setAlarm() {
-    if(alarmTime) {
-        const currentTime = new Date();
-        const timeToAlarm = new Date(alarmTime);
-
-        if (timeToAlarm > currentTime) {
-            const timeout = timeToAlarm.getTime() - currentTime.getTime();
-            alarmTimeout = setTimeout(() => audio.play(), timeout);
-            alert('Alarm Created Succesfully');
-        }
-    }
+ 
+function stopAlarm(){
+	sound.pause();
+	sound.currentTime = 0;
+	document.getElementById('selectButton').style.display = 'none';
+	cancelAlarm(document.getElementById('alarmButton'));
+	document.getElementById('alarmButton').style.display = '';
 }
-function clearAlarm() {
-    audio.pause();
-    if (alarmTimeout) {
-        clearTimeout(alarmTimeout);
-        alert('Alarm cleared');
-    }
+ 
+function snoozeAlarm(){
+	stopAlarm();
+	setTimeout(initAlarm, 300000);
+	button.innerText = "Cancel Alarm";
+	button.setAttribute('onclick', 'cancelAlarm(this);');
 }
-
-setInterval(updateTime,1000)
